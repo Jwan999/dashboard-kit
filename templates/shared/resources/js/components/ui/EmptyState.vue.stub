@@ -1,0 +1,24 @@
+<script setup>
+defineProps({
+  title: { type: String, required: true },
+  subtitle: String,
+  icon: Object,
+})
+</script>
+
+<template>
+  <div class="flex flex-col items-center justify-center text-center py-12 px-6">
+    <div
+      v-if="icon"
+      class="h-12 w-12 mb-3 rounded-full flex items-center justify-center"
+      style="background-color: var(--color-surface-muted); color: var(--color-text-muted);"
+    >
+      <component :is="icon" class="h-6 w-6" />
+    </div>
+    <h3 class="text-base font-semibold" style="color: var(--color-text);">{{ title }}</h3>
+    <p v-if="subtitle" class="mt-1 text-sm max-w-sm" style="color: var(--color-text-muted);">{{ subtitle }}</p>
+    <div v-if="$slots.action" class="mt-4">
+      <slot name="action" />
+    </div>
+  </div>
+</template>

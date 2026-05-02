@@ -1,0 +1,17 @@
+<script setup>
+defineProps({
+  for: { type: String, default: undefined },
+  required: Boolean,
+})
+</script>
+
+<template>
+  <label
+    :for="$props.for"
+    class="block text-sm font-medium mb-1.5"
+    style="color: var(--color-text); text-align: start;"
+  >
+    <slot />
+    <span v-if="required" class="ms-0.5" style="color: var(--color-error)">*</span>
+  </label>
+</template>

@@ -1,0 +1,28 @@
+<script setup>
+defineProps({
+  title: String,
+  subtitle: String,
+})
+</script>
+
+<template>
+  <section
+    class="rounded-md p-5 border"
+    style="
+      background-color: var(--color-surface);
+      border-color: var(--color-border);
+      box-shadow: var(--shadow-sm);
+    "
+  >
+    <header v-if="title || subtitle || $slots.header" class="mb-3">
+      <slot name="header">
+        <h3 v-if="title" class="text-base font-semibold" style="color: var(--color-text); text-align: start;">{{ title }}</h3>
+        <p v-if="subtitle" class="text-sm mt-0.5" style="color: var(--color-text-muted); text-align: start;">{{ subtitle }}</p>
+      </slot>
+    </header>
+    <slot />
+    <footer v-if="$slots.footer" class="mt-4 pt-4 border-t" style="border-color: var(--color-border)">
+      <slot name="footer" />
+    </footer>
+  </section>
+</template>

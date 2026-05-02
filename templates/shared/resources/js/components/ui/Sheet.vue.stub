@@ -1,0 +1,47 @@
+<script setup>
+import { onMounted, onBeforeUnmount, watch } from 'vue'
+
+const open = defineModel('open', { type: Boolean, default: false })
+defineProps({
+  side: { type: String, default: 'end' }, // 'start' | 'end' (logical — flips with RTL)
+  title: String,
+})
+
+function close() { open.value = false }
+function onKey(e) { if (e.key === 'Escape' && open.value) close() }
+
+onMounted(() => document.addEventListener('keydown', onKey))
+onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
+
+watch(open, (v) => { if (typeof document !== 'undefined') document.body.style.overflow = v ? 'hidden' : '' })
+</script>
+
+<template>
+  <Teleport to="body">
+    <Transition name="sheet">
+      <div
+        v-if="open"
+        class="fixed inset-0"
+        style="z-index: var(--z-modal); background-color: rgba(0,0,0,.45);"
+        @click.self="close"
+      >
+        <aside
+          class="absolute top-0 bottom-0 w-full max-w-md p-6 overflow-y-auto"
+          :style="`background-color: var(--color-surface); box-shadow: var(--shadow-lg); inset-inline-${side}: 0;`"
+          role="dialog"
+          aria-modal="true"
+        >
+          <header v-if="title" class="mb-4">
+            <h2 class="text-lg font-semibold" style="text-align: start;">{{ title }}</h2>
+          </header>
+          <slot />
+        </aside>
+      </div>
+    </Transition>
+  </Teleport>
+</template>
+
+<style scoped>
+.sheet-enter-active, .sheet-leave-active { transition: opacity var(--motion-duration) var(--motion-easing); }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
+</style>

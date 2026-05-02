@@ -1,0 +1,36 @@
+<script setup>
+import AppLayout from '@/components/layout/AppLayout.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import Card from '@/components/ui/Card.vue'
+import Label from '@/components/ui/Label.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+
+defineProps({ user: { type: Object, default: () => ({ name: 'Admin' }) } })
+
+const sidebarItems = [
+  { label: 'Dashboard', href: '__ROUTE_PREFIX__' },
+  { label: 'Settings', href: '__ROUTE_PREFIX__/settings' },
+]
+</script>
+
+<template>
+  <AppLayout :user="user" :sidebar-items="sidebarItems" :breadcrumbs="[{ label: 'Settings' }]">
+    <PageHeader title="Settings" subtitle="Manage your workspace preferences." />
+    <Card title="Profile" class="max-w-xl">
+      <form class="space-y-4">
+        <div>
+          <Label for="name" required>Name</Label>
+          <Input id="name" :model-value="user.name" />
+        </div>
+        <div>
+          <Label for="email">Email</Label>
+          <Input id="email" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="pt-2">
+          <Button type="submit">Save changes</Button>
+        </div>
+      </form>
+    </Card>
+  </AppLayout>
+</template>

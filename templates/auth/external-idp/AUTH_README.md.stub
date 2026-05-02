@@ -1,0 +1,32 @@
+# Auth: External IdP — TODO
+
+The wizard scaffolded __DISPLAY_NAME__ with the external-IdP option, which is
+intentionally a stub. You're expected to wire your own provider (Auth0, Clerk,
+Keycloak, Cognito, your in-house SSO, etc.).
+
+## What dashboard-kit did NOT do
+
+- It did not pick an SDK or auth library — that's your call.
+- It did not generate login/callback routes.
+- The HTTP client at `src/api/client.js` (SPA) or your Inertia auth flow does NOT
+  send any auth headers yet — replace the `__AUTH_INTERCEPTOR__` slot with your
+  provider's token-fetch logic.
+
+## Suggested checklist
+
+1. Decide between OIDC (Authorization Code + PKCE for SPAs) or SAML.
+2. Install your IdP's SDK and configure callback URLs.
+3. On login success, store the access token (in memory if possible, sessionStorage
+   if you must — avoid localStorage for sensitive tokens).
+4. Add an axios interceptor that fetches a fresh token (your SDK usually handles
+   refresh) and attaches `Authorization: Bearer <token>`.
+5. On Laravel side, validate the JWT — `firebase/php-jwt` for raw OIDC, or use
+   Sanctum + a custom guard if you want to keep the rest of the app conventional.
+6. Update `routes/web.php` (Inertia) or `src/router.js` (SPA) to gate routes
+   behind your auth check.
+
+## Why we left this empty
+
+The IdP integration is the most project-specific part of any auth system —
+generating a half-baked Auth0 stub would just create work to undo. This file is
+a checklist; replace it once you've made your choices.

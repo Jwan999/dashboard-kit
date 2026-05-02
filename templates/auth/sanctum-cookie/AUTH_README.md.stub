@@ -1,0 +1,41 @@
+# Auth: Sanctum cookie (session-based)
+
+The wizard scaffolded __DISPLAY_NAME__ to use Laravel Sanctum's first-party SPA auth.
+
+## What you get
+
+- `axios.defaults.withCredentials = true`
+- Calls go through the same domain so the browser sends Laravel's session cookie.
+- CSRF protection via `/sanctum/csrf-cookie`.
+
+## What you still need to do
+
+1. Install Sanctum if you haven't:
+
+   ```bash
+   composer require laravel/sanctum
+   php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+   php artisan migrate
+   ```
+
+2. In `bootstrap/app.php` (Laravel 11+) or `app/Http/Kernel.php` (Laravel 10), add the
+   Sanctum stateful middleware to the `api` group:
+
+   ```php
+   $middleware->statefulApi();
+   ```
+
+3. Set `SANCTUM_STATEFUL_DOMAINS` in `.env`:
+
+   ```
+   SANCTUM_STATEFUL_DOMAINS=__DOMAIN__
+   SESSION_DOMAIN=.__DOMAIN__
+   ```
+
+4. First request from the SPA must hit `/sanctum/csrf-cookie` to seed the XSRF token.
+   The client at `src/api/client.js` already sets `withCredentials: true`.
+
+## Why this and not tokens?
+
+Cookies are HttpOnly; tokens in localStorage are not. For a same-domain dashboard,
+cookie auth is the more secure default.

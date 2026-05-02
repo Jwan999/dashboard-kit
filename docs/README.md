@@ -1,9 +1,6 @@
 # docs
 
-Placeholder. Phase 2 + 3 will land here:
+- [ARCHITECTURE.md](ARCHITECTURE.md) — three-layer model (wizard / config / generator), file trail, design rationale.
+- [PUBLISHING.md](PUBLISHING.md) — how to ship to Packagist (and optionally npm), versioning policy, release checklist.
 
-- Architecture decisions (Inertia vs SPA tradeoff in depth).
-- Token spec and how the 50–900 scale is generated.
-- Chart wrapper adapter interface.
-- Component primitive bootstrap recipes.
-- Migration guide for retrofitting existing dashboards.
+The package's main README lives at the repo root.

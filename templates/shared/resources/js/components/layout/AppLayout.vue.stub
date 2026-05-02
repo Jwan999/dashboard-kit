@@ -1,0 +1,104 @@
+<script setup>
+import { ref } from 'vue'
+import Sidebar from '@/components/ui/Sidebar.vue'
+import DropdownMenu from '@/components/ui/DropdownMenu.vue'
+import { useTheme } from '@/composables/useTheme.js'
+import { useDirection } from '@/composables/useDirection.js'
+
+defineProps({
+  breadcrumbs: { type: Array, default: () => [] }, // [{ label, href? }]
+  sidebarItems: { type: Array, default: () => [] },
+  user: { type: Object, default: () => null }, // { name, email, avatar }
+})
+
+const collapsed = ref(false)
+const { theme, toggle: toggleTheme } = useTheme()
+const { dir, toggle: toggleDir } = useDirection()
+
+function logout() {
+  // Wired by the host app — emit, navigate, or call a composable.
+  console.warn('[AppLayout] logout — wire this in your host app.')
+}
+</script>
+
+<template>
+  <div
+    class="min-h-screen flex"
+    data-tenant-strategy="__TENANCY_STRATEGY__"
+    style="background-color: var(--color-bg); color: var(--color-text);"
+  >
+    <Sidebar :items="sidebarItems" :collapsed="collapsed">
+      <template #brand>
+        <div class="flex items-center gap-3 px-4 py-4 border-b" style="border-color: var(--color-border);">
+          <img v-if="$slots.logo" alt="logo" class="h-8 w-8" />
+          <slot name="logo" />
+          <div v-if="!collapsed" class="min-w-0">
+            <div class="font-semibold truncate" style="text-align: start;">__DISPLAY_NAME__</div>
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="p-3 border-t" style="border-color: var(--color-border);">
+          <button
+            type="button"
+            class="text-xs underline-offset-2 hover:underline"
+            style="color: var(--color-text-muted);"
+            @click="collapsed = !collapsed"
+          >{{ collapsed ? 'Expand' : 'Collapse' }}</button>
+        </div>
+      </template>
+    </Sidebar>
+
+    <main class="flex-1 flex flex-col min-w-0">
+      <header
+        class="flex items-center gap-3 px-6 h-16 border-b"
+        style="border-color: var(--color-border); background-color: var(--color-surface);"
+      >
+        <nav v-if="breadcrumbs.length" class="flex items-center gap-1.5 text-sm flex-1 min-w-0" aria-label="Breadcrumb">
+          <template v-for="(crumb, i) in breadcrumbs" :key="i">
+            <a v-if="crumb.href" :href="crumb.href" class="hover:underline truncate" style="color: var(--color-text-muted);">{{ crumb.label }}</a>
+            <span v-else class="truncate" style="color: var(--color-text);">{{ crumb.label }}</span>
+            <span v-if="i < breadcrumbs.length - 1" class="rtl:rotate-180" style="color: var(--color-text-muted);" aria-hidden="true">/</span>
+          </template>
+        </nav>
+        <div v-else class="flex-1" />
+
+        <button
+          type="button"
+          class="h-10 w-10 rounded-md hover:bg-[var(--color-surface-muted)]"
+          :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+          @click="toggleTheme"
+        >
+          <span aria-hidden="true">{{ theme === 'dark' ? '☀' : '☾' }}</span>
+        </button>
+
+        <!-- RTL/LTR toggle — only meaningful when default direction is `auto`. -->
+        <button
+          v-if="'__DEFAULT_DIRECTION__' === 'auto'"
+          type="button"
+          class="h-10 px-3 text-xs rounded-md hover:bg-[var(--color-surface-muted)]"
+          :aria-label="`Switch to ${dir === 'rtl' ? 'LTR' : 'RTL'}`"
+          @click="toggleDir"
+        >{{ dir === 'rtl' ? 'LTR' : 'RTL' }}</button>
+
+        <DropdownMenu v-if="user">
+          <template #trigger>
+            <button type="button" class="flex items-center gap-2 h-10 px-2 rounded-md hover:bg-[var(--color-surface-muted)]">
+              <div class="h-8 w-8 rounded-full" style="background-color: var(--color-primary); color: var(--color-primary-fg); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">
+                {{ (user.name || '?').slice(0, 1).toUpperCase() }}
+              </div>
+              <span class="text-sm hidden md:inline" style="color: var(--color-text);">{{ user.name }}</span>
+            </button>
+          </template>
+          <a href="/profile" class="block px-3 py-2 text-sm hover:bg-[var(--color-surface-muted)]" style="text-align: start;">Profile</a>
+          <a href="/settings" class="block px-3 py-2 text-sm hover:bg-[var(--color-surface-muted)]" style="text-align: start;">Settings</a>
+          <button type="button" class="block w-full px-3 py-2 text-sm hover:bg-[var(--color-surface-muted)]" style="text-align: start;" @click="logout">Log out</button>
+        </DropdownMenu>
+      </header>
+
+      <section class="flex-1 overflow-y-auto p-6">
+        <slot />
+      </section>
+    </main>
+  </div>
+</template>

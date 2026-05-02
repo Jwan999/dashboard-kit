@@ -1,0 +1,31 @@
+<script setup>
+import AppLayout from '@/components/layout/AppLayout.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import Card from '@/components/ui/Card.vue'
+import Chart from '@/components/charts/Chart.vue'
+
+const sidebarItems = [
+  { label: 'Dashboard', href: '__ROUTE_PREFIX__' },
+  { label: 'Settings', href: '__ROUTE_PREFIX__/settings' },
+]
+
+const chartOption = {
+  type: 'line',
+  data: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{ label: 'Sessions', data: [120, 200, 150, 220, 300, 280, 340] }],
+  },
+  xAxis: { type: 'category', data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  yAxis: { type: 'value' },
+  series: [{ name: 'Sessions', type: 'line', data: [120, 200, 150, 220, 300, 280, 340], smooth: true }],
+}
+</script>
+
+<template>
+  <AppLayout :user="{ name: 'Admin' }" :sidebar-items="sidebarItems" :breadcrumbs="[{ label: 'Dashboard' }]">
+    <PageHeader title="__DISPLAY_NAME__" subtitle="__DESCRIPTION__" />
+    <Card title="Sessions">
+      <Chart :option="chartOption" height="320px" />
+    </Card>
+  </AppLayout>
+</template>

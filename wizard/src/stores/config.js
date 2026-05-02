@@ -153,7 +153,7 @@ export const useConfigStore = defineStore('config', {
     asJson(state) {
       return {
         $schema: 'https://github.com/Jwan999/dashboard-kit/schema/v1',
-        version: '0.2.0',
+         version: '0.3.0',
         generatedAt: new Date().toISOString(),
         identity: {
           displayName: state.identity.displayName,
@@ -292,6 +292,44 @@ export const useConfigStore = defineStore('config', {
 
     setDataTables(patch) {
       this.data = { ...this.data, tables: { ...this.data.tables, ...patch } }
+    },
+
+    /**
+     * Load a config produced by an earlier wizard run (read from the host
+     * project's dashboard.config.json via the Vite middleware). Section-merged
+     * over defaults so newer fields still get sensible values.
+     */
+    loadExternalConfig(cfg) {
+      if (!cfg || typeof cfg !== 'object') return
+      const base = defaultState()
+      // Identity — preserve scaffolder-only fields (e.g. machineNameAuto, logoLight blob).
+      this.identity = {
+        ...base.identity,
+        displayName: cfg.identity?.displayName ?? base.identity.displayName,
+        machineName: cfg.identity?.machineName ?? base.identity.machineName,
+        machineNameAuto: false,
+        description: cfg.identity?.description ?? base.identity.description,
+        domain: cfg.identity?.domain ?? base.identity.domain,
+        routePrefix: cfg.identity?.routePrefix ?? base.identity.routePrefix,
+      }
+      this.language = { ...base.language, ...(cfg.language || {}) }
+      this.brand = {
+        ...base.brand,
+        ...(cfg.brand || {}),
+        accentEnabled: !!(cfg.brand && cfg.brand.accent),
+        accent: (cfg.brand && cfg.brand.accent) || base.brand.accent,
+        primaryScale: (cfg.brand && cfg.brand.primaryScale) || base.brand.primaryScale,
+        primaryScaleOverrides: {},
+        semantic: { ...base.brand.semantic, ...((cfg.brand && cfg.brand.semantic) || {}) },
+      }
+      this.visual = { ...base.visual, ...(cfg.visual || {}) }
+      this.architecture = { ...base.architecture, ...(cfg.architecture || {}) }
+      this.data = {
+        ...base.data,
+        ...(cfg.data || {}),
+        tables: { ...base.data.tables, ...((cfg.data && cfg.data.tables) || {}) },
+      }
+      this.operational = { ...base.operational, ...(cfg.operational || {}) }
     },
 
     /** Reset everything to defaults and clear persisted state. */

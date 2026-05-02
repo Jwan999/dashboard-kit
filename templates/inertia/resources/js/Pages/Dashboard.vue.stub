@@ -1,0 +1,48 @@
+<script setup>
+import AppLayout from '@/components/layout/AppLayout.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import Card from '@/components/ui/Card.vue'
+import Chart from '@/components/charts/Chart.vue'
+
+defineProps({
+  user: { type: Object, default: () => ({ name: 'Admin' }) },
+})
+
+const sidebarItems = [
+  { label: 'Dashboard', href: '__ROUTE_PREFIX__' },
+  { label: 'Settings', href: '__ROUTE_PREFIX__/settings' },
+]
+
+// Sample chart option — works for both ECharts and Chart.js (mostly).
+const chartOption = {
+  type: 'line',
+  data: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{ label: 'Sessions', data: [120, 200, 150, 220, 300, 280, 340] }],
+  },
+  // ECharts shape (also accepted by the wrapper):
+  xAxis: { type: 'category', data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  yAxis: { type: 'value' },
+  series: [{ name: 'Sessions', type: 'line', data: [120, 200, 150, 220, 300, 280, 340], smooth: true }],
+}
+</script>
+
+<template>
+  <AppLayout :user="user" :sidebar-items="sidebarItems" :breadcrumbs="[{ label: 'Dashboard' }]">
+    <PageHeader title="Welcome to __DISPLAY_NAME__" subtitle="__DESCRIPTION__" />
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <Card title="Active users" subtitle="last 7 days">
+        <div class="text-3xl font-semibold mt-1" style="color: var(--color-primary);">2,340</div>
+      </Card>
+      <Card title="Revenue" subtitle="last 7 days">
+        <div class="text-3xl font-semibold mt-1" style="color: var(--color-success);">$12.4k</div>
+      </Card>
+      <Card title="Errors" subtitle="last 24h">
+        <div class="text-3xl font-semibold mt-1" style="color: var(--color-error);">12</div>
+      </Card>
+    </div>
+    <Card title="Sessions">
+      <Chart :option="chartOption" height="320px" />
+    </Card>
+  </AppLayout>
+</template>

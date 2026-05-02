@@ -1,0 +1,53 @@
+<script setup>
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { createAdapter } from './adapters/index.js'
+
+/**
+ * <Chart> — lib-agnostic chart wrapper.
+ *
+ * Default adapter is __DEFAULT_CHART_LIBRARY__. Pass `adapter="chartjs"` (etc.)
+ * to override. To register a new library, add an adapter under `./adapters/`
+ * and extend `createAdapter` in `./adapters/index.js`.
+ *
+ * Adapter contract:
+ *   init(el, theme): instance
+ *   setOption(opts): void
+ *   resize(): void
+ *   dispose(): void
+ */
+const props = defineProps({
+  option: { type: Object, required: true },
+  adapter: { type: String, default: '__DEFAULT_CHART_LIBRARY__' },
+  height: { type: String, default: '320px' },
+  theme: { type: String, default: 'auto' }, // 'light' | 'dark' | 'auto'
+})
+
+const root = ref(null)
+let instance = null
+let ro = null
+
+function resolveTheme() {
+  if (props.theme !== 'auto') return props.theme
+  if (typeof document === 'undefined') return 'light'
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
+}
+
+onMounted(async () => {
+  if (!root.value) return
+  instance = await createAdapter(props.adapter, root.value, resolveTheme())
+  instance.setOption(props.option)
+  ro = new ResizeObserver(() => instance?.resize())
+  ro.observe(root.value)
+})
+
+watch(() => props.option, (next) => instance?.setOption(next), { deep: true })
+
+onBeforeUnmount(() => {
+  ro?.disconnect()
+  instance?.dispose()
+})
+</script>
+
+<template>
+  <div ref="root" :style="`width: 100%; height: ${height};`" />
+</template>

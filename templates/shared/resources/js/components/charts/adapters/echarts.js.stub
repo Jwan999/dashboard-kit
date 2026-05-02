@@ -1,0 +1,46 @@
+import * as echarts from 'echarts'
+
+/**
+ * ECharts adapter. Theme palette pulled from CSS variables so it tracks the
+ * brand tokens automatically.
+ */
+function readVar(name, fallback) {
+  if (typeof document === 'undefined') return fallback
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
+}
+
+function buildTheme(theme) {
+  return {
+    color: [
+      readVar('--color-primary-500', '__PRIMARY_HEX__'),
+      readVar('--color-info', '#0ea5e9'),
+      readVar('--color-success', '#16a34a'),
+      readVar('--color-warning', '#f59e0b'),
+      readVar('--color-error', '#dc2626'),
+      readVar('--color-primary-300', '#a5b4fc'),
+    ],
+    backgroundColor: 'transparent',
+    textStyle: {
+      fontFamily: readVar('--font-sans', 'system-ui'),
+      color: readVar('--color-text', theme === 'dark' ? '#f5f5f5' : '#111827'),
+    },
+  }
+}
+
+export default function adapter(el, theme) {
+  const inst = echarts.init(el, undefined, { renderer: 'canvas' })
+  const t = buildTheme(theme)
+  return {
+    setOption(opts) {
+      // Merge default theme into option without overriding user's color choices.
+      inst.setOption({
+        textStyle: t.textStyle,
+        backgroundColor: t.backgroundColor,
+        color: opts.color || t.color,
+        ...opts,
+      }, true)
+    },
+    resize() { inst.resize() },
+    dispose() { inst.dispose() },
+  }
+}

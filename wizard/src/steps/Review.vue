@@ -1,7 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useConfigStore } from '../stores/config.js'
+import { runGeneratorWithBundledTemplates } from '../generator/browserEntry.js'
+import { downloadZip, postToHost, probeHostMode } from '../generator/deliver.js'
 
 const config = useConfigStore()
 const router = useRouter()
@@ -127,6 +129,52 @@ async function copyConfig() {
   }
   setTimeout(() => (copyState.value = ''), 1400)
 }
+
+// ---------- Phase 3 — generate scaffold ----------
+const hostAvailable = ref(false)
+const hostCwd = ref('')
+const generating = ref(false)
+const result = ref(null) // { mode, files, steps, error? }
+
+onMounted(async () => {
+  try {
+    const ok = await probeHostMode()
+    hostAvailable.value = ok
+    if (ok) {
+      const r = await fetch('/__dashboard_kit/api/ping').then((r) => r.json()).catch(() => null)
+      if (r) {
+        hostAvailable.value = !!r.ok && !r.standalone
+        hostCwd.value = r.cwd || ''
+      }
+    }
+  } catch (_) { /* noop */ }
+})
+
+async function generate() {
+  generating.value = true
+  result.value = null
+  try {
+    const cfg = config.asJson
+    const { files, steps } = runGeneratorWithBundledTemplates(cfg)
+    if (hostAvailable.value) {
+      const resp = await postToHost({ files, steps })
+      result.value = { mode: 'host', files: resp.files, steps: resp.steps, cwd: resp.cwd }
+    } else {
+      await downloadZip(files, (cfg.identity.machineName || 'dashboard') + '-scaffold')
+      result.value = { mode: 'zip', files: files.map((f) => f.path), steps }
+    }
+  } catch (e) {
+    result.value = { mode: 'error', error: String(e?.message || e) }
+  } finally {
+    generating.value = false
+  }
+}
+
+const generateLabel = computed(() => {
+  if (generating.value) return 'Generating…'
+  if (hostAvailable.value) return 'Generate scaffold (write to project)'
+  return 'Generate scaffold (download ZIP)'
+})
 </script>
 
 <template>
@@ -193,22 +241,64 @@ async function copyConfig() {
     </div>
 
     <div class="card">
-      <div class="flex items-center justify-between">
-        <div>
+      <div class="flex items-start justify-between gap-4">
+        <div class="min-w-0">
           <div class="section-title" style="margin-bottom: 4px">Generate scaffold</div>
           <p class="text-xs" style="color: var(--color-text-muted)">
-            Writes tokens.css, tailwind config, components.json, AppLayout, i18n, &lt;Chart&gt; wrapper.
+            Writes tokens.css, tailwind config, components.json, AppLayout, i18n, &lt;Chart&gt; wrapper, and integration-specific pages.
+          </p>
+          <p class="text-xs mt-2" style="color: var(--color-text-muted)">
+            <span v-if="hostAvailable">
+              Host project detected at <code class="font-mono">{{ hostCwd }}</code> — files will be written in place.
+              Existing files at the same paths will be overwritten.
+            </span>
+            <span v-else>
+              No host Laravel project detected — you'll get a ZIP to unzip into your project root.
+            </span>
           </p>
         </div>
         <button
           type="button"
-          class="px-4 py-2 text-sm rounded-md font-medium opacity-50 cursor-not-allowed"
+          class="px-4 py-2 text-sm rounded-md font-medium shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
           style="background-color: var(--color-primary); color: #fff"
-          disabled
-          title="Available in Phase 3"
+          :disabled="generating"
+          @click="generate"
         >
-          Generate scaffold
+          {{ generateLabel }}
         </button>
+      </div>
+
+      <div
+        v-if="result && result.mode === 'error'"
+        class="mt-4 p-3 rounded-md text-xs"
+        style="background-color: color-mix(in srgb, var(--color-error) 10%, transparent); color: var(--color-error); border: 1px solid var(--color-error)"
+      >
+        {{ result.error }}
+      </div>
+
+      <div v-if="result && result.mode !== 'error'" class="mt-4 space-y-3">
+        <div class="text-xs" style="color: var(--color-text-muted)">
+          <strong style="color: var(--color-text)">{{ result.mode === 'host' ? 'Wrote to disk' : 'ZIP downloaded' }}.</strong>
+          {{ Array.isArray(result.files) ? result.files.length : 0 }} files.
+          <span v-if="result.cwd"> at <code class="font-mono">{{ result.cwd }}</code></span>
+        </div>
+        <details class="text-xs">
+          <summary class="cursor-pointer" style="color: var(--color-text-muted)">Files ({{ Array.isArray(result.files) ? result.files.length : 0 }})</summary>
+          <ul class="mt-2 ps-4 space-y-0.5 font-mono" style="color: var(--color-text-muted)">
+            <li v-for="f in result.files" :key="f">{{ f }}</li>
+          </ul>
+        </details>
+        <div v-if="result.steps && result.steps.length">
+          <div class="text-xs font-semibold mb-2" style="color: var(--color-text)">Next steps</div>
+          <ol class="space-y-2 text-xs">
+            <li
+              v-for="(step, i) in result.steps"
+              :key="i"
+              class="p-2 rounded-md font-mono whitespace-pre-wrap"
+              style="background-color: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-text)"
+            >{{ step }}</li>
+          </ol>
+        </div>
       </div>
     </div>
   </div>

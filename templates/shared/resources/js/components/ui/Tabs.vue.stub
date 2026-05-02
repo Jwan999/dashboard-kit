@@ -1,0 +1,22 @@
+<script setup>
+import { provide, ref } from 'vue'
+
+const props = defineProps({ modelValue: String, default: { type: String, default: '' } })
+const emit = defineEmits(['update:modelValue'])
+
+const internal = ref(props.modelValue ?? props.default)
+const activeKey = () => (props.modelValue !== undefined ? props.modelValue : internal.value)
+
+function setActive(key) {
+  if (props.modelValue !== undefined) emit('update:modelValue', key)
+  else internal.value = key
+}
+
+provide('tabs', { activeKey, setActive })
+</script>
+
+<template>
+  <div>
+    <slot />
+  </div>
+</template>

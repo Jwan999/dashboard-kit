@@ -1,0 +1,34 @@
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+
+/**
+ * usePolling — minimal polling hook.
+ *
+ * Picked over websockets when the wizard's `realTime === 'polling'`. Keeps the
+ * stack simpler when freshness within ~5s is acceptable.
+ */
+export function usePolling(fetcher, { interval = 5000, immediate = true } = {}) {
+  const data = ref(null)
+  const error = ref(null)
+  const loading = ref(false)
+  let timer = null
+
+  async function tick() {
+    loading.value = true
+    try {
+      data.value = await fetcher()
+      error.value = null
+    } catch (e) {
+      error.value = e
+    } finally {
+      loading.value = false
+    }
+  }
+
+  onMounted(() => {
+    if (immediate) tick()
+    timer = setInterval(tick, interval)
+  })
+  onBeforeUnmount(() => { if (timer) clearInterval(timer) })
+
+  return { data, error, loading, refresh: tick }
+}

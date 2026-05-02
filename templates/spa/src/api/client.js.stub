@@ -1,0 +1,38 @@
+import axios from 'axios'
+
+/**
+ * SPA HTTP client.
+ *
+ * Auth model: __AUTH_MODEL__
+ *
+ * For sanctum-tokens: token is read from localStorage and attached as a Bearer
+ *   header. Caveat: storing tokens in localStorage exposes them to XSS — for
+ *   higher-security deployments switch to sanctum-cookie (same-domain SPA + Inertia).
+ *
+ * For sanctum-cookie: rely on the browser's session cookie. You must call
+ *   `/sanctum/csrf-cookie` once before the first state-changing request.
+ *
+ * For external-idp: replace this whole module — see auth/external-idp/README.
+ */
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE || '/api',
+  withCredentials: __WITH_CREDENTIALS__,
+  headers: { 'Accept': 'application/json' },
+})
+
+api.interceptors.request.use((config) => {
+__AUTH_INTERCEPTOR__
+  return config
+})
+
+api.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err.response?.status === 401 && typeof window !== 'undefined') {
+      // Token expired or session lost — bounce to login.
+      window.location.href = '/login'
+    }
+    return Promise.reject(err)
+  },
+)

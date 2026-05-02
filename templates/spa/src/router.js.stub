@@ -1,0 +1,12 @@
+import { createRouter, createWebHistory } from 'vue-router'
+
+const routes = [
+  { path: '__ROUTE_PREFIX__', name: 'dashboard', component: () => import('./views/Dashboard.vue') },
+  { path: '__ROUTE_PREFIX__/settings', name: 'settings', component: () => import('./views/Settings.vue') },
+  { path: '/', redirect: '__ROUTE_PREFIX__' },
+]
+
+export default createRouter({
+  history: createWebHistory(),
+  routes,
+})

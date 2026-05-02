@@ -12,7 +12,8 @@ class ScaffoldCommand extends Command
      */
     protected $signature = 'dashboard:scaffold
         {--port= : Override the auto-selected port (5173-5199)}
-        {--no-open : Do not auto-open the browser}';
+        {--no-open : Do not auto-open the browser}
+        {--standalone : Run the wizard without writing to the host project (ZIP download only)}';
 
     /**
      * The console command description.
@@ -43,10 +44,20 @@ class ScaffoldCommand extends Command
         }
 
         $url = "http://localhost:{$port}";
+        $standalone = (bool) $this->option('standalone');
+        // The host project root is the directory the user invoked Artisan from.
+        // Vite middleware writes generated files into THIS directory.
+        $hostCwd = getcwd();
 
         $this->newLine();
-        $this->info('  dashboard-kit — Phase 1 wizard');
-        $this->line("  Wizard running at {$url}");
+        $this->info('  dashboard-kit — scaffolding wizard');
+        $this->line("  Wizard:  {$url}");
+        if ($standalone) {
+            $this->line('  Mode:    standalone (ZIP download only)');
+        } else {
+            $this->line("  Project: {$hostCwd}");
+            $this->line('  Mode:    host write (files go directly into this project)');
+        }
         $this->line('  Press Ctrl+C to stop.');
         $this->newLine();
 
@@ -55,11 +66,24 @@ class ScaffoldCommand extends Command
         }
 
         // Boot Vite dev server for the wizard app.
-        // Phase 1 chose `npm run dev` (hot-reload during dev) over serving a pre-built dist.
+        // We run with cwd = host project so the Vite middleware writes there.
+        // Standalone mode sets DASHBOARD_KIT_STANDALONE=1 which makes the
+        // middleware refuse to write — wizard falls back to ZIP.
+        $env = array_merge(
+            $_ENV,
+            $_SERVER,
+            [
+                'DASHBOARD_KIT_STANDALONE' => $standalone ? '1' : '0',
+                // Vite needs to be launched inside wizard/ (so npm finds package.json),
+                // but the middleware writes to the HOST project — pass that explicitly.
+                'DASHBOARD_KIT_HOST_CWD' => $standalone ? '' : $hostCwd,
+            ]
+        );
+
         $process = new Process(
             ['npm', 'run', 'dev', '--', '--port', (string) $port, '--host', '127.0.0.1'],
             $wizardPath,
-            null,
+            $env,
             null,
             null
         );

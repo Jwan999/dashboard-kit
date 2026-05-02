@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/**
+ * Tailwind v4 — wire CSS variables from tokens.css into Tailwind's theme via @theme.
+ * This is what makes `bg-primary`, `text-muted`, `rounded-md` resolve to the
+ * tokens you (or the wizard) defined.
+ */
+@theme {
+  --color-primary-50:  var(--color-primary-50);
+  --color-primary-100: var(--color-primary-100);
+  --color-primary-200: var(--color-primary-200);
+  --color-primary-300: var(--color-primary-300);
+  --color-primary-400: var(--color-primary-400);
+  --color-primary-500: var(--color-primary-500);
+  --color-primary-600: var(--color-primary-600);
+  --color-primary-700: var(--color-primary-700);
+  --color-primary-800: var(--color-primary-800);
+  --color-primary-900: var(--color-primary-900);
+  --color-primary: var(--color-primary);
+
+  --color-neutral-50:  var(--color-neutral-50);
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-400: var(--color-neutral-400);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-600: var(--color-neutral-600);
+  --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-800: var(--color-neutral-800);
+  --color-neutral-900: var(--color-neutral-900);
+
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error:   var(--color-error);
+  --color-info:    var(--color-info);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}
+
+/* RTL: swap font for Arabic content automatically when the closest [dir] is rtl. */
+[dir="rtl"] {
+  font-family: var(--font-arabic);
+  line-height: var(--leading-arabic);
+}
+[dir="ltr"] {
+  font-family: var(--font-latin);
+  line-height: var(--leading-latin);
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Touch targets — 44x44 minimum (a11y). */
+button, [role="button"], a.button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Reduced motion — respect the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

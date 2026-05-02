@@ -1,6 +1,11 @@
 # tests
 
-PHPUnit + Orchestra Testbench placeholder. Phase 2 will add:
+PHP test scaffolding. The actual generator smoke test lives at
+`wizard/tests/generator-smoke.mjs` (Node) — run it with:
 
-- `ScaffoldCommandTest` — verifies the command is registered, picks a free port, and surfaces friendly errors when the wizard dir is missing.
-- `ConfigEmitterTest` (Phase 3) — verifies `dashboard.config.json` round-trips without loss.
+```bash
+cd wizard
+node tests/generator-smoke.mjs
+```
+
+PHPUnit suites for the Artisan command land in a future release.

@@ -1,0 +1,39 @@
+<script setup>
+import { ref } from 'vue'
+
+const toasts = ref([])
+let id = 0
+
+function push(opts) {
+  const t = { id: ++id, kind: opts.kind ?? 'info', message: opts.message, duration: opts.duration ?? 4000 }
+  toasts.value.push(t)
+  setTimeout(() => { toasts.value = toasts.value.filter((x) => x.id !== t.id) }, t.duration)
+}
+
+defineExpose({ push })
+
+const tone = {
+  info: 'var(--color-info)',
+  success: 'var(--color-success)',
+  warning: 'var(--color-warning)',
+  error: 'var(--color-error)',
+}
+</script>
+
+<template>
+  <Teleport to="body">
+    <div
+      class="fixed flex flex-col gap-2 p-4"
+      style="bottom: 0; inset-inline-end: 0; z-index: var(--z-toast);"
+      role="region"
+      aria-live="polite"
+    >
+      <div
+        v-for="t in toasts"
+        :key="t.id"
+        class="rounded-md px-4 py-3 text-sm shadow"
+        :style="`background-color: var(--color-surface); color: var(--color-text); border-inline-start: 4px solid ${tone[t.kind]}; box-shadow: var(--shadow-md); min-width: 280px; text-align: start;`"
+      >{{ t.message }}</div>
+    </div>
+  </Teleport>
+</template>

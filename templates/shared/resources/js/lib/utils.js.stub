@@ -1,0 +1,17 @@
+/**
+ * cn() — merge class names, handling falsy values and arrays.
+ * Same signature as shadcn-vue's `cn`. Lighter than clsx + tailwind-merge for
+ * the rare cases where you don't need conflict-resolution.
+ */
+export function cn(...inputs) {
+  const out = []
+  for (const i of inputs) {
+    if (!i) continue
+    if (typeof i === 'string') out.push(i)
+    else if (Array.isArray(i)) out.push(cn(...i))
+    else if (typeof i === 'object') {
+      for (const [k, v] of Object.entries(i)) if (v) out.push(k)
+    }
+  }
+  return out.join(' ')
+}

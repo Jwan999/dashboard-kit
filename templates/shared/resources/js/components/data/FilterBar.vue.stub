@@ -1,0 +1,20 @@
+<script setup>
+import Input from '@/components/ui/Input.vue'
+
+defineProps({
+  placeholder: { type: String, default: 'Search…' },
+})
+const search = defineModel('search', { type: String, default: '' })
+</script>
+
+<template>
+  <div
+    class="flex items-center gap-2 p-3 rounded-md border"
+    style="border-color: var(--color-border); background-color: var(--color-surface);"
+  >
+    <Input v-model="search" :placeholder="placeholder" class="max-w-md" />
+    <div class="flex-1" />
+    <slot name="filters" />
+    <slot name="actions" />
+  </div>
+</template>

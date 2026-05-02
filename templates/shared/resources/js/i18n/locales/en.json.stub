@@ -1,0 +1,40 @@
+{
+  "app": {
+    "name": "__DISPLAY_NAME__",
+    "description": "__DESCRIPTION__"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Log out",
+    "profile": "Profile"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "export": "Export",
+    "filter": "Filter"
+  },
+  "auth": {
+    "login": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "remember": "Remember me",
+    "forgot": "Forgot password?",
+    "submit": "Sign in"
+  },
+  "empty": {
+    "title": "No data yet",
+    "subtitle": "Records will appear here once added."
+  },
+  "table": {
+    "of": "of",
+    "rows": "rows",
+    "selected": "selected",
+    "page": "page"
+  }
+}

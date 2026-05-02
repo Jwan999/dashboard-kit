@@ -1,0 +1,17 @@
+/**
+ * Chart adapter registry.
+ *
+ * To register a new library:
+ *   1. create `./<lib>.js` exporting `default` async function (el, theme) => instance
+ *      where instance has { setOption(opts), resize(), dispose() }
+ *   2. add it to the switch below.
+ */
+export async function createAdapter(name, el, theme) {
+  switch (name) {
+    case 'echarts': return (await import('./echarts.js')).default(el, theme)
+    case 'chartjs': return (await import('./chartjs.js')).default(el, theme)
+    default:
+      console.warn(`[Chart] unknown adapter "${name}", falling back to __DEFAULT_CHART_LIBRARY__`)
+      return (await import('./__DEFAULT_CHART_LIBRARY__.js')).default(el, theme)
+  }
+}

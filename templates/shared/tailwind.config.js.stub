@@ -1,0 +1,20 @@
+/**
+ * Tailwind v4 config for __DISPLAY_NAME__.
+ *
+ * v4 reads its theme primarily from the `@theme` block in `app.css`. This file
+ * exists for plugin registration, content scanning, and the (small) bits of
+ * config that v4 still consumes from JS — most notably the RTL plugin and dark
+ * mode strategy.
+ */
+
+import rtl from 'tailwindcss-rtl'
+
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './resources/**/*.{vue,js,ts,blade.php}',
+    './src/**/*.{vue,js,ts}',
+  ],
+  darkMode: ['selector', '[data-theme="dark"]'],
+  plugins: [rtl()],
+}

@@ -1,0 +1,34 @@
+import { createI18n } from 'vue-i18n'
+
+/**
+ * i18n bootstrap — eager-loads default + fallback, lazy-loads everything else.
+ * Add new locales by dropping a JSON file in ./locales/ and importing it below.
+ */
+__LOCALE_IMPORTS__
+
+export const SUPPORTED_LOCALES = __SUPPORTED_LOCALES_JSON__
+
+export const i18n = createI18n({
+  legacy: false,
+  globalInjection: true,
+  locale: '__DEFAULT_LANGUAGE__',
+  fallbackLocale: '__FALLBACK_LOCALE__',
+  messages: {
+__INITIAL_MESSAGES__
+  },
+})
+
+/** Lazy-load a locale on demand. */
+export async function loadLocale(locale) {
+  if (i18n.global.availableLocales.includes(locale)) {
+    i18n.global.locale.value = locale
+    return
+  }
+  try {
+    const mod = await import(`./locales/${locale}.json`)
+    i18n.global.setLocaleMessage(locale, mod.default)
+    i18n.global.locale.value = locale
+  } catch (e) {
+    console.warn(`[i18n] failed to load locale "${locale}"`, e)
+  }
+}

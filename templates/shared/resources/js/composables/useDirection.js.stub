@@ -1,0 +1,41 @@
+import { ref, onMounted } from 'vue'
+
+/**
+ * useDirection — RTL/LTR controller, scoped to <html>.
+ *
+ * Default direction is set by the wizard at scaffold time (see __DEFAULT_DIRECTION__).
+ * Users can override at runtime via toggle() — useful when `direction === 'auto'`.
+ */
+const STORAGE_KEY = '__MACHINE_NAME__:dir'
+const DEFAULT_DIRECTION = '__DEFAULT_DIRECTION__' // 'rtl' | 'ltr' | 'auto'
+
+function resolveAuto(lang) {
+  const rtl = new Set(['ar', 'fa', 'he', 'ur'])
+  return rtl.has((lang || '').slice(0, 2)) ? 'rtl' : 'ltr'
+}
+
+export function useDirection(currentLang = '__DEFAULT_LANGUAGE__') {
+  const dir = ref('ltr')
+
+  function apply(next) {
+    if (typeof document === 'undefined') return
+    document.documentElement.setAttribute('dir', next)
+    dir.value = next
+    try { localStorage.setItem(STORAGE_KEY, next) } catch (_) { /* noop */ }
+  }
+
+  function toggle() {
+    apply(dir.value === 'rtl' ? 'ltr' : 'rtl')
+  }
+
+  onMounted(() => {
+    let initial
+    try { initial = localStorage.getItem(STORAGE_KEY) } catch (_) { /* noop */ }
+    if (initial !== 'rtl' && initial !== 'ltr') {
+      initial = DEFAULT_DIRECTION === 'auto' ? resolveAuto(currentLang) : DEFAULT_DIRECTION
+    }
+    apply(initial)
+  })
+
+  return { dir, toggle, apply }
+}

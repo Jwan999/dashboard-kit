@@ -1,0 +1,19 @@
+<script setup>
+import AppLayout from '@/components/layout/AppLayout.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import Card from '@/components/ui/Card.vue'
+
+const sidebarItems = [
+  { label: 'Dashboard', href: '__ROUTE_PREFIX__' },
+  { label: 'Settings', href: '__ROUTE_PREFIX__/settings' },
+]
+</script>
+
+<template>
+  <AppLayout :user="{ name: 'Admin' }" :sidebar-items="sidebarItems" :breadcrumbs="[{ label: 'Settings' }]">
+    <PageHeader title="Settings" />
+    <Card title="Profile">
+      <p style="color: var(--color-text-muted);">Settings UI lives here. Wire to your API client in <code>src/api/client.js</code>.</p>
+    </Card>
+  </AppLayout>
+</template>

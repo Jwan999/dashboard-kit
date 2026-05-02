@@ -1,0 +1,40 @@
+{
+  "app": {
+    "name": "__DISPLAY_NAME__",
+    "description": "__DESCRIPTION__"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج",
+    "profile": "الملف الشخصي"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "export": "تصدير",
+    "filter": "تصفية"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "remember": "تذكرني",
+    "forgot": "نسيت كلمة المرور؟",
+    "submit": "دخول"
+  },
+  "empty": {
+    "title": "لا توجد بيانات حتى الآن",
+    "subtitle": "ستظهر السجلات هنا عند إضافتها."
+  },
+  "table": {
+    "of": "من",
+    "rows": "صفوف",
+    "selected": "محدد",
+    "page": "صفحة"
+  }
+}

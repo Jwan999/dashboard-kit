@@ -1,0 +1,47 @@
+# Auth: Sanctum tokens (Bearer)
+
+The wizard scaffolded __DISPLAY_NAME__ to use Laravel Sanctum's API tokens.
+
+## Tradeoff (read this first)
+
+Tokens are stored in `localStorage` — that means any XSS in your app can steal them.
+This is acceptable for cross-domain SPAs and mobile clients sharing one API. If your
+SPA lives on the same domain as Laravel, switch to `sanctum-cookie` instead.
+
+## What you get
+
+- `Authorization: Bearer <token>` on every request.
+- Token persisted to `localStorage` under `__MACHINE_NAME__:token`.
+- 401 responses redirect to `/login`.
+
+## Setup
+
+1. Install Sanctum:
+
+   ```bash
+   composer require laravel/sanctum
+   php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+   php artisan migrate
+   ```
+
+2. Issue tokens from your login endpoint, e.g.:
+
+   ```php
+   $token = $user->createToken('spa', ['*'], now()->addDays(30))->plainTextToken;
+   return response()->json(['token' => $token, 'user' => $user]);
+   ```
+
+3. After login, persist the token from the SPA:
+
+   ```js
+   localStorage.setItem('__MACHINE_NAME__:token', response.data.token)
+   ```
+
+4. To log out, hit `/api/logout` (which calls `$request->user()->currentAccessToken()->delete()`)
+   and clear the token.
+
+## Hardening
+
+- Set short expirations and rotate.
+- Scope tokens (`['user:read', 'orders:write']`) — request only what each surface needs.
+- Consider Sanctum's `tokenCan()` checks server-side.

@@ -1,0 +1,56 @@
+<script setup>
+import { onMounted, onBeforeUnmount, watch } from 'vue'
+
+const open = defineModel('open', { type: Boolean, default: false })
+const props = defineProps({
+  title: String,
+  description: String,
+  closeOnBackdrop: { type: Boolean, default: true },
+})
+
+function close() { open.value = false }
+function onKey(e) { if (e.key === 'Escape' && open.value) close() }
+
+onMounted(() => document.addEventListener('keydown', onKey))
+onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
+
+watch(open, (v) => {
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = v ? 'hidden' : ''
+})
+</script>
+
+<template>
+  <Teleport to="body">
+    <Transition name="dlg">
+      <div
+        v-if="open"
+        class="fixed inset-0 flex items-center justify-center p-4"
+        style="z-index: var(--z-modal); background-color: rgba(0,0,0,.45);"
+        role="dialog"
+        aria-modal="true"
+        :aria-labelledby="title ? 'dlg-title' : undefined"
+        @click.self="closeOnBackdrop && close()"
+      >
+        <div
+          class="w-full max-w-lg rounded-md p-6"
+          style="background-color: var(--color-surface); box-shadow: var(--shadow-lg);"
+        >
+          <header v-if="title || description" class="mb-4">
+            <h2 v-if="title" id="dlg-title" class="text-lg font-semibold" style="text-align: start;">{{ title }}</h2>
+            <p v-if="description" class="text-sm mt-1" style="color: var(--color-text-muted); text-align: start;">{{ description }}</p>
+          </header>
+          <slot />
+          <footer v-if="$slots.footer" class="mt-6 flex items-center justify-end gap-2">
+            <slot name="footer" />
+          </footer>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+</template>
+
+<style scoped>
+.dlg-enter-active, .dlg-leave-active { transition: opacity var(--motion-duration) var(--motion-easing); }
+.dlg-enter-from, .dlg-leave-to { opacity: 0; }
+</style>

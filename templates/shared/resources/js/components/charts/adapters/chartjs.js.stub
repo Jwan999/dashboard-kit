@@ -1,0 +1,58 @@
+import { Chart, registerables } from 'chart.js'
+
+Chart.register(...registerables)
+
+/**
+ * Chart.js adapter. Translates the same option shape into Chart.js config.
+ * For the wrapper to be drop-in across libs, callers are expected to pass a
+ * minimal shape: { type, data, options? }.
+ */
+function readVar(name, fallback) {
+  if (typeof document === 'undefined') return fallback
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
+}
+
+export default function adapter(el) {
+  // Chart.js needs a <canvas> child.
+  const canvas = document.createElement('canvas')
+  el.innerHTML = ''
+  el.appendChild(canvas)
+  let inst = null
+
+  const palette = [
+    readVar('--color-primary-500', '__PRIMARY_HEX__'),
+    readVar('--color-info', '#0ea5e9'),
+    readVar('--color-success', '#16a34a'),
+    readVar('--color-warning', '#f59e0b'),
+    readVar('--color-error', '#dc2626'),
+  ]
+
+  return {
+    setOption(opts) {
+      if (inst) { inst.destroy(); inst = null }
+      const cfg = {
+        type: opts.type || 'line',
+        data: opts.data || { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: readVar('--color-text', '#111827') } } },
+          scales: {
+            x: { ticks: { color: readVar('--color-text-muted', '#6b7280') }, grid: { color: readVar('--color-border', '#e5e7eb') } },
+            y: { ticks: { color: readVar('--color-text-muted', '#6b7280') }, grid: { color: readVar('--color-border', '#e5e7eb') } },
+          },
+          ...opts.options,
+        },
+      }
+      // Inject palette into datasets that didn't specify a color.
+      cfg.data.datasets = (cfg.data.datasets || []).map((ds, i) => ({
+        backgroundColor: palette[i % palette.length] + '33',
+        borderColor: palette[i % palette.length],
+        ...ds,
+      }))
+      inst = new Chart(canvas.getContext('2d'), cfg)
+    },
+    resize() { inst?.resize() },
+    dispose() { inst?.destroy(); inst = null },
+  }
+}

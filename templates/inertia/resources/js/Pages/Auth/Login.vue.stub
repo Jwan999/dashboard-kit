@@ -1,0 +1,45 @@
+<script setup>
+import { ref } from 'vue'
+import { router } from '@inertiajs/vue3'
+import Card from '@/components/ui/Card.vue'
+import Label from '@/components/ui/Label.vue'
+import Input from '@/components/ui/Input.vue'
+import Button from '@/components/ui/Button.vue'
+
+const email = ref('')
+const password = ref('')
+const remember = ref(false)
+const submitting = ref(false)
+
+function submit() {
+  submitting.value = true
+  router.post('/login', { email: email.value, password: password.value, remember: remember.value }, {
+    onFinish: () => { submitting.value = false },
+  })
+}
+</script>
+
+<template>
+  <div class="min-h-screen flex items-center justify-center p-6" style="background-color: var(--color-bg);">
+    <Card title="Sign in to __DISPLAY_NAME__" class="w-full max-w-md">
+      <form class="space-y-4" @submit.prevent="submit">
+        <div>
+          <Label for="email" required>Email</Label>
+          <Input id="email" v-model="email" type="email" autocomplete="email" required />
+        </div>
+        <div>
+          <Label for="password" required>Password</Label>
+          <Input id="password" v-model="password" type="password" autocomplete="current-password" required />
+        </div>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" v-model="remember" />
+          Remember me
+        </label>
+        <Button type="submit" :loading="submitting" class="w-full">Sign in</Button>
+        <div class="text-center text-sm">
+          <a href="/forgot-password" style="color: var(--color-primary);">Forgot password?</a>
+        </div>
+      </form>
+    </Card>
+  </div>
+</template>

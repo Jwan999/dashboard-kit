@@ -1,0 +1,209 @@
+<script setup>
+import { computed, h, ref } from 'vue'
+import {
+  useVueTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  flexRender,
+} from '@tanstack/vue-table'
+import Skeleton from '@/components/ui/Skeleton.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
+
+const props = defineProps({
+  columns: { type: Array, required: true },
+  data: { type: Array, default: () => [] },
+  loading: Boolean,
+  // Server-side pagination — when true, parent owns page state and emits 'page-change'
+  serverPagination: { type: Boolean, default: false },
+  pageIndex: { type: Number, default: 0 },
+  pageSize: { type: Number, default: 20 },
+  pageCount: { type: Number, default: -1 },
+  totalRows: { type: Number, default: 0 },
+})
+const emit = defineEmits(['page-change', 'selection-change', 'export'])
+
+{{#if rowSelection}}
+const rowSelection = ref({})
+const selectionColumn = {
+  id: 'select',
+  header: ({ table }) => h('input', {
+    type: 'checkbox',
+    checked: table.getIsAllRowsSelected(),
+    indeterminate: table.getIsSomeRowsSelected(),
+    onChange: table.getToggleAllRowsSelectedHandler(),
+    'aria-label': 'Select all',
+  }),
+  cell: ({ row }) => h('input', {
+    type: 'checkbox',
+    checked: row.getIsSelected(),
+    disabled: !row.getCanSelect(),
+    onChange: row.getToggleSelectedHandler(),
+    'aria-label': 'Select row',
+  }),
+}
+{{/if}}
+
+const allColumns = computed(() => {
+  const cols = [...props.columns]
+  {{#if rowSelection}}
+  cols.unshift(selectionColumn)
+  {{/if}}
+  return cols
+})
+
+const table = useVueTable({
+  get data() { return props.data },
+  get columns() { return allColumns.value },
+  state: {
+    {{#if rowSelection}}
+    get rowSelection() { return rowSelection.value },
+    {{/if}}
+    {{#if pagination}}
+    get pagination() { return { pageIndex: props.pageIndex, pageSize: props.pageSize } },
+    {{/if}}
+  },
+  {{#if rowSelection}}
+  enableRowSelection: true,
+  onRowSelectionChange: (updater) => {
+    rowSelection.value = typeof updater === 'function' ? updater(rowSelection.value) : updater
+    emit('selection-change', rowSelection.value)
+  },
+  {{/if}}
+  {{#if pagination}}
+  manualPagination: props.serverPagination,
+  pageCount: props.serverPagination ? props.pageCount : undefined,
+  onPaginationChange: (updater) => {
+    const next = typeof updater === 'function' ? updater({ pageIndex: props.pageIndex, pageSize: props.pageSize }) : updater
+    emit('page-change', next)
+  },
+  getPaginationRowModel: props.serverPagination ? undefined : getPaginationRowModel(),
+  {{/if}}
+  getCoreRowModel: getCoreRowModel(),
+  getSortedRowModel: getSortedRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
+})
+
+{{#if export}}
+function exportCsv() {
+  const rows = table.getFilteredRowModel().rows
+  const cols = props.columns.filter((c) => c.accessorKey)
+  const header = cols.map((c) => `"${(c.header || c.accessorKey).toString().replaceAll('"', '""')}"`).join(',')
+  const body = rows.map((r) => cols.map((c) => {
+    const v = r.getValue(c.accessorKey) ?? ''
+    return `"${String(v).replaceAll('"', '""')}"`
+  }).join(',')).join('\n')
+  const blob = new Blob([header + '\n' + body], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = 'export.csv'
+  document.body.appendChild(a); a.click(); document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  emit('export')
+}
+{{/if}}
+
+const isEmpty = computed(() => !props.loading && props.data.length === 0)
+</script>
+
+<template>
+  <div class="rounded-md border" style="border-color: var(--color-border); background-color: var(--color-surface);">
+    {{#if bulkActions}}
+    <div
+      v-if="Object.keys(rowSelection).length > 0"
+      class="flex items-center justify-between px-4 py-2 border-b"
+      style="background-color: var(--color-surface-muted); border-color: var(--color-border);"
+    >
+      <span class="text-sm">{{ Object.keys(rowSelection).length }} selected</span>
+      <div class="flex items-center gap-2">
+        <slot name="bulk-actions" :selection="rowSelection" />
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if export}}
+    <div class="flex items-center justify-end px-4 py-2 border-b" style="border-color: var(--color-border);">
+      <button
+        type="button"
+        class="text-sm px-3 py-1.5 rounded-md border"
+        style="border-color: var(--color-border); color: var(--color-text);"
+        @click="exportCsv"
+      >Export CSV</button>
+    </div>
+    {{/if}}
+
+    <div v-if="loading" class="p-4 space-y-3">
+      <Skeleton v-for="n in 6" :key="n" height="2.5rem" />
+    </div>
+
+    <EmptyState v-else-if="isEmpty" title="No data yet" subtitle="Records will appear here once added." />
+
+    <table v-else class="w-full text-sm" style="border-collapse: collapse;">
+      <thead style="background-color: var(--color-surface-muted);">
+        <tr v-for="hg in table.getHeaderGroups()" :key="hg.id">
+          <th
+            v-for="header in hg.headers"
+            :key="header.id"
+            class="px-4 py-3 font-medium"
+            style="text-align: start; color: var(--color-text-muted); border-bottom: 1px solid var(--color-border);"
+          >
+            <component :is="flexRender(header.column.columnDef.header, header.getContext())" v-if="!header.isPlaceholder" />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="row in table.getRowModel().rows"
+          :key="row.id"
+          class="hover:bg-[var(--color-surface-muted)]"
+          style="transition: background-color var(--motion-duration) var(--motion-easing);"
+        >
+          <td
+            v-for="cell in row.getVisibleCells()"
+            :key="cell.id"
+            class="px-4 py-3"
+            style="border-bottom: 1px solid var(--color-border); color: var(--color-text);"
+          >
+            <component :is="flexRender(cell.column.columnDef.cell, cell.getContext())" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    {{#if pagination}}
+    <div
+      v-if="!loading && !isEmpty"
+      class="flex items-center justify-between px-4 py-3 border-t"
+      style="border-color: var(--color-border);"
+    >
+      <div class="text-xs" style="color: var(--color-text-muted);">
+        <span v-if="serverPagination">Page {{ pageIndex + 1 }} of {{ pageCount > 0 ? pageCount : '?' }} · {{ totalRows }} rows</span>
+        <span v-else>{{ table.getRowModel().rows.length }} of {{ table.getFilteredRowModel().rows.length }} rows</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="text-sm px-3 py-1.5 rounded-md border disabled:opacity-50"
+          style="border-color: var(--color-border); color: var(--color-text);"
+          :disabled="!table.getCanPreviousPage()"
+          @click="table.previousPage()"
+        >
+          <span class="rtl:hidden">Previous</span>
+          <span class="hidden rtl:inline">السابق</span>
+        </button>
+        <button
+          type="button"
+          class="text-sm px-3 py-1.5 rounded-md border disabled:opacity-50"
+          style="border-color: var(--color-border); color: var(--color-text);"
+          :disabled="!table.getCanNextPage()"
+          @click="table.nextPage()"
+        >
+          <span class="rtl:hidden">Next</span>
+          <span class="hidden rtl:inline">التالي</span>
+        </button>
+      </div>
+    </div>
+    {{/if}}
+  </div>
+</template>

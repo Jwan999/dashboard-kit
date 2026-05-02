@@ -1,0 +1,65 @@
+<script setup>
+import { ref } from 'vue'
+
+defineProps({
+  items: {
+    type: Array,
+    default: () => [],
+    // [{ label, href, icon?, children?: [{label, href}] }]
+  },
+  collapsed: { type: Boolean, default: false },
+})
+
+const openGroups = ref(new Set())
+function toggleGroup(label) {
+  if (openGroups.value.has(label)) openGroups.value.delete(label)
+  else openGroups.value.add(label)
+}
+</script>
+
+<template>
+  <nav
+    class="h-full flex flex-col"
+    :style="`width: ${collapsed ? '68px' : '260px'}; background-color: var(--color-surface); border-inline-end: 1px solid var(--color-border); transition: width var(--motion-duration) var(--motion-easing);`"
+    aria-label="Primary"
+  >
+    <slot name="brand" />
+    <ul class="flex-1 overflow-y-auto py-2">
+      <li v-for="item in items" :key="item.label">
+        <template v-if="!item.children">
+          <a
+            :href="item.href"
+            class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-[var(--color-surface-muted)]"
+            style="color: var(--color-text); text-align: start;"
+          >
+            <component :is="item.icon" v-if="item.icon" class="h-5 w-5 shrink-0" />
+            <span v-if="!collapsed">{{ item.label }}</span>
+          </a>
+        </template>
+        <template v-else>
+          <button
+            type="button"
+            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-[var(--color-surface-muted)]"
+            style="color: var(--color-text); text-align: start;"
+            @click="toggleGroup(item.label)"
+            :aria-expanded="openGroups.has(item.label)"
+          >
+            <component :is="item.icon" v-if="item.icon" class="h-5 w-5 shrink-0" />
+            <span v-if="!collapsed" class="flex-1">{{ item.label }}</span>
+            <span v-if="!collapsed" class="rtl:rotate-180" aria-hidden="true">›</span>
+          </button>
+          <ul v-if="openGroups.has(item.label) && !collapsed" class="ps-9">
+            <li v-for="child in item.children" :key="child.label">
+              <a
+                :href="child.href"
+                class="block py-2 text-sm hover:bg-[var(--color-surface-muted)] rounded-md ps-2 pe-3"
+                style="color: var(--color-text-muted);"
+              >{{ child.label }}</a>
+            </li>
+          </ul>
+        </template>
+      </li>
+    </ul>
+    <slot name="footer" />
+  </nav>
+</template>
