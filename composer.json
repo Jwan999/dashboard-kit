@@ -1,0 +1,51 @@
+{
+    "name": "jwan/dashboard-kit",
+    "description": "A Laravel + Vue dashboard scaffolder. Run an interactive wizard to capture brand tokens, language, direction, charts, and architecture choices, then emit a brand-customizable, structurally-identical dashboard scaffold.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "vue",
+        "dashboard",
+        "scaffolding",
+        "design-tokens",
+        "tailwind",
+        "rtl",
+        "inertia",
+        "shadcn-vue"
+    ],
+    "authors": [
+        {
+            "name": "Jwan",
+            "email": "jwanaalfatla1999@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/console": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "orchestra/testbench": "^8.0|^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jwan\\DashboardKit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jwan\\DashboardKit\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jwan\\DashboardKit\\DashboardKitServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

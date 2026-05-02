@@ -1,0 +1,16 @@
+{
+  "name": "@jwan/dashboard-kit",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Dashboard scaffolder wizard — root workspace. The wizard app lives in ./wizard.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm run dev --prefix wizard",
+    "build": "npm run build --prefix wizard",
+    "preview": "npm run preview --prefix wizard",
+    "install:wizard": "npm install --prefix wizard"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

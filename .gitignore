@@ -1,0 +1,36 @@
+# PHP / Composer
+/vendor/
+composer.phar
+composer.lock
+.phpunit.result.cache
+.phpunit.cache/
+
+# Node / Vite
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Wizard build output
+wizard/dist/
+wizard/.vite/
+wizard/node_modules/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/

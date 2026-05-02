@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+/* Phase 1 design tokens — placeholders. Phase 2 will derive these from the wizard config. */
+@theme {
+  --color-bg: #0b0d12;
+  --color-surface: #11141b;
+  --color-surface-2: #161a23;
+  --color-border: #232836;
+  --color-text: #e7eaf0;
+  --color-text-muted: #8b93a7;
+  --color-primary: #6366f1;
+  --color-primary-soft: #4f46e5;
+  --color-accent: #22d3ee;
+  --radius-card: 0.75rem;
+  --radius-pill: 9999px;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial;
+}
+
+* {
+  box-sizing: border-box;
+}
