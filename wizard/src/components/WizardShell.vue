@@ -4,9 +4,11 @@ import { useRoute, useRouter } from 'vue-router'
 import Stepper from './Stepper.vue'
 import PreviewPane from './PreviewPane.vue'
 import { stepDefinitions } from '../router.js'
+import { useConfigStore } from '../stores/config.js'
 
 const route = useRoute()
 const router = useRouter()
+const config = useConfigStore()
 
 const currentStepIndex = computed(() => {
   const idx = route.meta?.stepIndex
@@ -33,8 +35,15 @@ function goNext() {
 }
 
 function skipStep() {
-  // Phase 2 will mark this batch as "skipped" in the store before navigating.
   goNext()
+}
+
+function resetAll() {
+  if (typeof window !== 'undefined' && window.confirm) {
+    if (!window.confirm('Reset every choice and clear saved progress?')) return
+  }
+  config.reset()
+  router.push(stepDefinitions[0].path)
 }
 </script>
 
@@ -53,8 +62,15 @@ function skipStep() {
           dashboard-kit
         </div>
         <div class="mt-1 text-base font-semibold">Scaffolding wizard</div>
-        <div class="mt-0.5 text-xs" style="color: var(--color-text-muted)">
-          Phase 1 — placeholder shell
+        <div class="mt-0.5 text-xs flex items-center gap-2" style="color: var(--color-text-muted)">
+          <span>Phase 2 — interactive</span>
+          <button
+            type="button"
+            class="ms-auto underline-offset-2 hover:underline"
+            @click="resetAll"
+          >
+            reset
+          </button>
         </div>
       </div>
       <Stepper :current="currentStepIndex" :steps="stepDefinitions" class="flex-1 overflow-y-auto" />
